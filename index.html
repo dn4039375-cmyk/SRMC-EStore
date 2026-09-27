@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SR Care - Swetha Rajshahi Cosmetic and Pharmacy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacy: {
+                            50: '#e6f4ea',
+                            100: '#cce9d5',
+                            500: '#0d5c3f',
+                            600: '#0a4932',
+                            700: '#073625',
+                            800: '#052419',
+                            900: '#031810'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @media print {
+            body * { visibility: hidden; }
+            #printable-invoice, #printable-invoice * { visibility: visible; }
+            #printable-invoice { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased flex flex-col min-h-screen">
+
+    <!-- TOPMOST BAR -->
+    <div class="bg-pharmacy-600 text-white text-xs sm:text-sm py-2 px-4 shadow-inner">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="flex items-center gap-2 text-center sm:text-left">
+                <i class="fa-solid fa-location-dot text-pharmacy-100"></i>
+                <span>Shop No. 38, Gali No. 2, Shetla Colony, Near Shetla Mata Mandir, Gurugram, Haryana</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="tel:9813480524" class="flex items-center gap-1.5 hover:text-pharmacy-100 transition">
+                    <i class="fa-solid fa-phone text-pharmacy-100"></i> 9813480524 / 9050568087
+                </a>
+                <span class="hidden md:inline text-pharmacy-200">|</span>
+                <button onclick="switchView('admin')" id="adminTopBtn" class="flex items-center gap-1 bg-pharmacy-800 px-3 py-1 rounded-full text-xs font-semibold hover:bg-pharmacy-700 transition">
+                    <i class="fa-solid fa-shield-halved text-pharmacy-100"></i> Admin Portal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN NAVBAR -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <!-- Brand Logo & Name -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('store')">
+                <div class="w-11 h-11 rounded-xl bg-pharmacy-500 text-white flex items-center justify-center font-bold text-xl shadow-md border border-pharmacy-600" id="brandLogoContainer">
+                    <span id="brandLogoText">SR</span>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-xl sm:text-2xl text-pharmacy-600 tracking-tight leading-none" id="brandTitleName">Swetha Rajshahi</h1>
+                    <p class="text-xs text-gray-500 font-medium tracking-wide">Cosmetics & Pharmacy <span class="text-pharmacy-500 font-bold">• SR Care</span></p>
+                </div>
+            </div>
+
+            <!-- Search Bar (Desktop) -->
+            <div class="hidden md:flex flex-1 max-w-xl mx-4 relative">
+                <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Search medicines, skincare, baby care..." class="w-full bg-gray-100 border border-gray-200 rounded-full py-2.5 pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-pharmacy-500 focus:bg-white transition">
+                <button onclick="triggerSearch()" class="absolute right-1 top-1 bg-pharmacy-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-pharmacy-600 transition">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </button>
+                <!-- Search Suggestions Dropdown -->
+                <div id="searchSuggestions" class="absolute left-0 right-0 top-12 bg-white rounded-xl shadow-xl border border-gray-100 hidden z-50 max-h-80 overflow-y-auto"></div>
+            </div>
+
+            <!-- Actions & Cart -->
+            <div class="flex items-center gap-3">
+                <button onclick="openTrackOrderModal()" class="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition">
+                    <i class="fa-solid fa-truck-fast text-pharmacy-500"></i> Track Order
+                </button>
+                <button onclick="toggleWishlist()" class="relative p-2 text-gray-700 hover:text-pharmacy-600 transition">
+                    <i class="fa-regular fa-heart text-xl"></i>
+                    <span id="wishlistCount" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+                </button>
+                <button onclick="toggleCart()" class="relative bg-pharmacy-500 hover:bg-pharmacy-600 text-white px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="text-xs font-bold hidden sm:inline">Cart</span>
+                    <span id="cartCountBadge" class="bg-amber-400 text-pharmacy-900 text-xs font-black px-1.5 py-0.5 rounded-full">0</span>
+                </button>
+                <button onclick="openAuthModal()" id="userAuthBtn" class="flex items-center gap-1.5 text-xs font-semibold bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg text-gray-700 transition">
+                    <i class="fa-regular fa-user text-pharmacy-500"></i> <span id="authBtnText">Login</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div class="block md:hidden px-4 pb-3">
+            <div class="relative">
+                <input type="text" id="mobileSearchInput" oninput="handleSearch(this.value)" placeholder="Search medicines & cosmetics..." class="w-full bg-gray-100 border border-gray-200 rounded-full py-2 pl-4 pr-10 text-xs focus:outline-none focus:ring-2 focus:ring-pharmacy-500">
+                <button class="absolute right-1 top-1 bg-pharmacy-500 text-white w-7 h-7 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- CATEGORIES SUB-NAVBAR -->
+        <div class="bg-white border-t border-gray-100 overflow-x-auto no-scrollbar">
+            <div class="max-w-7xl mx-auto px-4 flex items-center gap-6 py-2.5 text-xs sm:text-sm font-semibold whitespace-nowrap">
+                <button onclick="filterCategory('All')" class="text-pharmacy-600 hover:text-pharmacy-700 flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-house"></i> Home
+                </button>
+                <button onclick="filterCategory('Medicines')" class="text-gray-600 hover:text-pharmacy-600 transition">Medicines & Prescriptions</button>
+                <button onclick="filterCategory('Skin Care')" class="text-gray-600 hover:text-pharmacy-600 transition">Skin Care & Glow</button>
+                <button onclick="filterCategory('Hair Care')" class="text-gray-600 hover:text-pharmacy-600 transition">Hair Care Essentials</button>
+                <button onclick="filterCategory('Face Care')" class="text-gray-600 hover:text-pharmacy-600 transition">Face Care</button>
+                <button onclick="filterCategory('Baby Care')" class="text-gray-600 hover:text-pharmacy-600 transition">Baby Care Products</button>
+                <button onclick="filterCategory('Personal Care')" class="text-gray-600 hover:text-pharmacy-600 transition">Personal Care</button>
+                <button onclick="switchView('admin')" class="text-pharmacy-500 hover:text-pharmacy-700 ml-auto font-bold flex items-center gap-1">
+                    <i class="fa-solid fa-gauge-high"></i> Admin Panel
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-pharmacy-800 text-white px-5 py-3 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toastMsg" class="text-sm font-medium">Notification message here</span>
+    </div>
+
+    <!-- ================= VIEW 1: CUSTOMER STOREFRONT ================= -->
+    <div id="storeView" class="flex-1 flex flex-col">
+        
+        <!-- HERO BANNER -->
+        <section class="bg-gradient-to-r from-pharmacy-800 via-pharmacy-700 to-pharmacy-900 text-white py-12 px-4 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+            <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10">
+                <div class="space-y-4">
+                    <span class="bg-emerald-500/20 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/30">
+                        <i class="fa-solid fa-bolt mr-1"></i> Fast Doorstep Delivery in Gurugram
+                    </span>
+                    <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                        Your Health, Our Care <span class="block text-emerald-400 text-2xl sm:text-3xl font-semibold mt-1">Swetha Rajshahi Cosmetic & Pharmacy</span>
+                    </h2>
+                    <p class="text-pharmacy-100 text-sm sm:text-base max-w-lg">
+                        Order genuine prescription medicines, baby care, trusted personal cosmetics, and healthcare essentials right to your doorstep. Upload prescription easily.
+                    </p>
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button onclick="scrollToCatalog()" class="bg-white text-pharmacy-800 font-bold px-6 py-3 rounded-xl shadow-lg hover:bg-emerald-50 transition flex items-center gap-2">
+                            <i class="fa-solid fa-pills text-pharmacy-600"></i> Browse Medicines
+                        </button>
+                        <button onclick="openPrescriptionModal()" class="bg-emerald-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:bg-emerald-500 transition border border-emerald-400/40 flex items-center gap-2">
+                            <i class="fa-solid fa-file-medical"></i> Upload Prescription
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-2xl flex flex-col gap-4">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-amber-400 text-pharmacy-900 font-black flex items-center justify-center">SR</div>
+                            <div>
+                                <h4 class="font-bold text-sm">Chemist: Yuvraj Rajshahi</h4>
+                                <p class="text-[11px] text-gray-300">Licenced Pharmacy Store</p>
+                            </div>
+                        </div>
+                        <span class="bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse">Live 24/7</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div class="bg-black/20 p-3 rounded-xl">
+                            <i class="fa-solid fa-shield-check text-emerald-400 mb-1 text-base"></i>
+                            <p class="font-bold">100% Genuine</p>
+                            <span class="text-[10px] text-gray-300">Verified products & batches</span>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded-xl">
+                            <i class="fa-solid fa-truck-medical text-amber-300 mb-1 text-base"></i>
+                            <p class="font-bold">Express Delivery</p>
+                            <span class="text-[10px] text-gray-300">Within Shetla Colony & Gurugram</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- WHY CHOOSE US -->
+        <section class="bg-white py-10 border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-pharmacy-50 text-pharmacy-600 flex items-center justify-center text-lg font-bold shrink-0">
+                        <i class="fa-solid fa-stethoscope"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-900">Expert Pharmacist</h4>
+                        <p class="text-xs text-gray-500">Supervised by Yuvraj Rajshahi</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-pharmacy-50 text-pharmacy-600 flex items-center justify-center text-lg font-bold shrink-0">
+                        <i class="fa-solid fa-percent"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-900">Best Discounts</h4>
+                        <p class="text-xs text-gray-500">Savings on all medicines & cosmetics</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-pharmacy-50 text-pharmacy-600 flex items-center justify-center text-lg font-bold shrink-0">
+                        <i class="fa-solid fa-file-shield"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-900">Safe Prescriptions</h4>
+                        <p class="text-xs text-gray-500">Strict prescription verification</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-pharmacy-50 text-pharmacy-600 flex items-center justify-center text-lg font-bold shrink-0">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-900">Dedicated Support</h4>
+                        <p class="text-xs text-gray-500">Call 9813480524 / 9050568087</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRODUCT CATALOG SECTION -->
+        <section id="catalogSection" class="max-w-7xl mx-auto px-4 py-12 flex-1 w-full">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <div>
+                    <h3 class="text-2xl font-extrabold text-gray-900" id="catalogTitle">Featured Medicines & Products</h3>
+                    <p class="text-xs text-gray-500">Browse verified stock from Swetha Rajshahi Cosmetic and Pharmacy</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <select id="sortSelect" onchange="sortProducts(this.value)" class="bg-white border border-gray-200 text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pharmacy-500">
+                        <option value="default">Sort By: Recommended</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="discount">Biggest Discount</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= VIEW 2: ADMIN MANAGEMENT PANEL ================= -->
+    <div id="adminView" class="flex-1 flex flex-col hidden bg-gray-100">
+        <!-- Admin Subheader -->
+        <div class="bg-white border-b border-gray-200 px-4 py-4 shadow-sm">
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-pharmacy-700 text-white flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-extrabold text-lg text-gray-900">Swetha Rajshahi Management Portal</h2>
+                        <p class="text-xs text-emerald-600 font-semibold"><span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-1"></span> SECURE ADMIN PORTAL (Active Session)</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="switchView('store')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-xs font-bold transition">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Exit to Store
+                    </button>
+                    <button onclick="adminLogout()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 py-2 rounded-xl text-xs font-bold transition">
+                        <i class="fa-solid fa-right-from-bracket mr-1"></i> Admin Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full space-y-8">
+            
+            <!-- ADMIN TABS NAVIGATION -->
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar bg-white p-2 rounded-2xl shadow-sm border border-gray-200">
+                <button onclick="switchAdminTab('dashboard')" id="tabBtn-dashboard" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-pharmacy-600 text-white transition">Dashboard</button>
+                <button onclick="switchAdminTab('products')" id="tabBtn-products" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100 transition">Products & Inventory</button>
+                <button onclick="switchAdminTab('orders')" id="tabBtn-orders" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100 transition">Customer Orders</button>
+                <button onclick="switchAdminTab('prescriptions')" id="tabBtn-prescriptions" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100 transition">Prescriptions</button>
+                <button onclick="switchAdminTab('branding')" id="tabBtn-branding" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100 transition">Store Branding & Settings</button>
+            </div>
+
+            <!-- TAB 1: DASHBOARD STATS -->
+            <div id="adminTab-dashboard" class="admin-tab-content space-y-6">
+                <!-- KPI Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Today's Sales</p>
+                        <h4 class="text-2xl font-black text-pharmacy-600 mt-2">₹14,850</h4>
+                        <span class="text-[11px] text-emerald-600 font-semibold mt-1 inline-block"><i class="fa-solid fa-arrow-trend-up"></span> +12% from yesterday</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pending Orders</p>
+                        <h4 id="statPendingOrders" class="text-2xl font-black text-amber-600 mt-2">1</h4>
+                        <span class="text-[11px] text-amber-600 font-semibold mt-1 inline-block">Requires verification</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Products</p>
+                        <h4 id="statTotalProducts" class="text-2xl font-black text-gray-800 mt-2">5</h4>
+                        <span class="text-[11px] text-gray-500 font-semibold mt-1 inline-block">Active in catalog</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Backend Notifications</p>
+                        <h4 class="text-xl font-black text-emerald-600 mt-2">Active</h4>
+                        <span class="text-[11px] text-gray-500 font-semibold mt-1 inline-block">Securely Configured</span>
+                    </div>
+                </div>
+
+                <!-- Recent Orders Table Preview in Dashboard -->
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-extrabold text-base text-gray-900">Customer Orders & Prescription Verification</h3>
+                        <button onclick="switchAdminTab('orders')" class="text-xs font-bold text-pharmacy-600 hover:underline">View All</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
+                                <tr>
+                                    <th class="py-3 px-4">Order ID</th>
+                                    <th class="py-3 px-4">Customer</th>
+                                    <th class="py-3 px-4">Items</th>
+                                    <th class="py-3 px-4">Total</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4">Prescription</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminDashboardOrdersTable" class="divide-y divide-gray-100">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PRODUCTS & INVENTORY MANAGEMENT -->
+            <div id="adminTab-products" class="admin-tab-content space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <input type="text" id="adminProductSearch" oninput="filterAdminProducts(this.value)" placeholder="Search products, batch, composition..." class="bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-xs w-full sm:w-80 focus:outline-none focus:ring-2 focus:ring-pharmacy-500">
+                    </div>
+                    <button onclick="openProductModal()" class="bg-pharmacy-600 hover:bg-pharmacy-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow transition">
+                        <i class="fa-solid fa-plus"></i> Add New Product
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
+                                <tr>
+                                    <th class="py-3.5 px-4">Product Name</th>
+                                    <th class="py-3.5 px-4">Category</th>
+                                    <th class="py-3.5 px-4">MRP / Rate</th>
+                                    <th class="py-3.5 px-4">Stock</th>
+                                    <th class="py-3.5 px-4">Batch / Expiry</th>
+                                    <th class="py-3.5 px-4">Rx Required</th>
+                                    <th class="py-3.5 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminProductsTable" class="divide-y divide-gray-100">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: CUSTOMER ORDERS -->
+            <div id="adminTab-orders" class="admin-tab-content space-y-6 hidden">
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+                    <h3 class="font-extrabold text-base text-gray-900">All Customer Orders Management</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
+                                <tr>
+                                    <th class="py-3 px-4">Order ID & Date</th>
+                                    <th class="py-3 px-4">Customer Details</th>
+                                    <th class="py-3 px-4">Medicines & Qty</th>
+                                    <th class="py-3 px-4">Total Amount</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4 text-right">Actions / Invoice</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminOrdersTable" class="divide-y divide-gray-100">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: PRESCRIPTION VERIFICATION -->
+            <div id="adminTab-prescriptions" class="admin-tab-content space-y-6 hidden">
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+                    <h3 class="font-extrabold text-base text-gray-900">Prescription Verification Queue</h3>
+                    <p class="text-xs text-gray-500">Review uploaded customer prescriptions before dispatching prescription-required medicines.</p>
+                    <div id="adminPrescriptionList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: STORE BRANDING & SETTINGS -->
+            <div id="adminTab-branding" class="admin-tab-content space-y-6 hidden">
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6 max-w-2xl">
+                    <div>
+                        <h3 class="font-extrabold text-base text-gray-900">Store Branding & Settings</h3>
+                        <p class="text-xs text-gray-500">Configure store logo, name, GST details, and contact info.</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Store / Brand Name</label>
+                            <input type="text" id="settingStoreName" value="Swetha Rajshahi Cosmetic and Pharmacy" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:ring-2 focus:ring-pharmacy-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Tagline</label>
+                            <input type="text" id="settingTagline" value="Your Health, Our Care" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Chemist Name</label>
+                                <input type="text" id="settingChemist" value="Yuvraj Rajshahi" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Contact Numbers</label>
+                                <input type="text" id="settingContact" value="9813480524 / 9050568087" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Store Address</label>
+                            <input type="text" id="settingAddress" value="Shetla Colony, Gali No. 2, Shop No. 38, Gurugram, Haryana" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Upload Store Logo / Initials</label>
+                            <div class="flex items-center gap-4">
+                                <input type="text" id="settingLogoText" value="SR" maxlength="3" class="w-24 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-black text-center uppercase">
+                                <span class="text-xs text-gray-500">Enter 2-3 letters for brand emblem badge</span>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-gray-100 flex justify-end">
+                            <button onclick="saveStoreSettings()" class="bg-pharmacy-600 hover:bg-pharmacy-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow transition">
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= SLIDE-OVER CART DRAWER ================= -->
+    <div id="cartDrawer" class="fixed inset-0 z-50 overflow-hidden hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onclick="toggleCart()"></div>
+        <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div class="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+                <div class="p-4 bg-pharmacy-600 text-white flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <h3 class="font-extrabold text-sm">Your Shopping Cart</h3>
+                    </div>
+                    <button onclick="toggleCart()" class="text-white hover:bg-pharmacy-700 p-1.5 rounded-lg transition">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                
+                <div id="cartItemsContainer" class="flex-1 overflow-y-auto p-4 space-y-4 divide-y divide-gray-100">
+                    <!-- Cart items populated here -->
+                </div>
+
+                <div class="p-4 bg-gray-50 border-t border-gray-200 space-y-3">
+                    <div class="flex justify-between text-xs text-gray-600">
+                        <span>Subtotal</span>
+                        <span id="cartSubtotal" class="font-bold text-gray-900">₹0</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-600">
+                        <span>Home Delivery (Gurugram)</span>
+                        <span class="font-bold text-emerald-600">FREE</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-extrabold text-gray-900 pt-2 border-t border-gray-200">
+                        <span>Total Amount</span>
+                        <span id="cartTotal" class="text-pharmacy-600">₹0</span>
+                    </div>
+                    <button onclick="proceedToCheckout()" class="w-full bg-pharmacy-600 hover:bg-pharmacy-700 text-white font-bold py-3 rounded-xl shadow-md text-xs transition flex items-center justify-center gap-2">
+                        <span>Proceed to Checkout</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= SLIDE-OVER WISHLIST DRAWER ================= -->
+    <div id="wishlistDrawer" class="fixed inset-0 z-50 overflow-hidden hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onclick="toggleWishlist()"></div>
+        <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div class="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+                <div class="p-4 bg-pharmacy-600 text-white flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-heart text-rose-400"></i>
+                        <h3 class="font-extrabold text-sm">Your Saved Wishlist</h3>
+                    </div>
+                    <button onclick="toggleWishlist()" class="text-white hover:bg-pharmacy-700 p-1.5 rounded-lg transition">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                <div id="wishlistItemsContainer" class="flex-1 overflow-y-auto p-4 space-y-4 divide-y divide-gray-100">
+                    <!-- Wishlist items populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CHECKOUT MODAL ================= -->
+    <div id="checkoutModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="font-extrabold text-base text-gray-900">Secure Order Checkout</h3>
+                <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <form id="checkoutForm" onsubmit="submitOrder(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Full Name *</label>
+                    <input type="text" id="chkName" required placeholder="Enter customer name" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-medium focus:ring-2 focus:ring-pharmacy-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Mobile Number *</label>
+                        <input type="tel" id="chkMobile" required placeholder="10-digit mobile" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-medium">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Email Address</label>
+                        <input type="email" id="chkEmail" placeholder="name@example.com" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-medium">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Delivery Address (Gurugram & Nearby) *</label>
+                    <textarea id="chkAddress" required rows="2" placeholder="House No, Street, Landmark, Sector/Colony" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-medium"></textarea>
+                </div>
+                
+                <!-- Prescription Upload requirement check -->
+                <div id="prescriptionUploadBox" class="p-3 bg-amber-50 border border-amber-200 rounded-xl hidden space-y-2">
+                    <p class="font-bold text-amber-800 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Prescription Required</p>
+                    <p class="text-[11px] text-amber-700">One or more items in your cart require a valid doctor prescription. Please attach prescription image/PDF.</p>
+                    <input type="file" id="chkPrescriptionFile" accept="image/*,.pdf" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pharmacy-50 file:text-pharmacy-700 hover:file:bg-pharmacy-100">
+                </div>
+
+                <div class="p-3 bg-gray-50 rounded-xl space-y-1.5 font-medium text-gray-600">
+                    <div class="flex justify-between"><span>Payment Mode:</span> <strong class="text-gray-900">Cash on Delivery / UPI</strong></div>
+                    <div class="flex justify-between"><span>Total Payable:</span> <strong id="chkFinalAmount" class="text-pharmacy-600 font-black text-sm">₹0</strong></div>
+                </div>
+
+                <button type="submit" class="w-full bg-pharmacy-600 hover:bg-pharmacy-700 text-white font-bold py-3 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check-circle"></i> Confirm & Place Order
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= ADD / EDIT PRODUCT MODAL (ADMIN) ================= -->
+    <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 id="productModalTitle" class="font-extrabold text-base text-gray-900">Add New Product</h3>
+                <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <form id="productForm" onsubmit="saveProduct(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="prodId">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Product Name *</label>
+                    <input type="text" id="prodName" required placeholder="e.g. Paracetamol 650mg / Vitamin C" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-medium">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Category *</label>
+                        <select id="prodCategory" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-medium">
+                            <option value="Medicines">Medicines</option>
+                            <option value="Skin Care">Skin Care</option>
+                            <option value="Hair Care">Hair Care</option>
+                            <option value="Face Care">Face Care</option>
+                            <option value="Baby Care">Baby Care</option>
+                            <option value="Personal Care">Personal Care</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Manufacturer</label>
+                        <input type="text" id="prodManufacturer" placeholder="e.g. Cipla / Sun Pharma" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-medium">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">MRP (₹) *</label>
+                        <input type="number" id="prodMrp" required step="0.5" placeholder="100" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-medium">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Selling Price (₹) *</label>
+                        <input type="number" id="prodPrice" required step="0.5" placeholder="85" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-medium">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Stock Qty *</label>
+                        <input type="number" id="prodStock" required placeholder="50" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-medium">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Batch Number</label>
+                        <input type="text" id="prodBatch" placeholder="BCH-9821" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-medium">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Expiry Date</label>
+                        <input type="text" id="prodExpiry" placeholder="12/2028" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-medium">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Image URL / Unsplash Link</label>
+                    <input type="text" id="prodImage" placeholder="https://images.unsplash.com/..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 font-medium">
+                </div>
+                <div class="flex items-center gap-2 pt-2">
+                    <input type="checkbox" id="prodRx" class="w-4 h-4 text-pharmacy-600 rounded">
+                    <label for="prodRx" class="font-bold text-gray-700">Prescription Required for this product</label>
+                </div>
+                <button type="submit" class="w-full bg-pharmacy-600 hover:bg-pharmacy-700 text-white font-bold py-3 rounded-xl shadow-md transition mt-3">
+                    Save Product in Database
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= INVOICE MODAL / PRINTABLE BILL ================= -->
+    <div id="invoiceModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[95vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="font-extrabold text-sm text-gray-900">Tax Invoice & Cash Memo</h3>
+                <button onclick="closeInvoiceModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <!-- Printable Area -->
+            <div id="printable-invoice" class="p-6 bg-white border border-gray-200 rounded-xl space-y-4 text-xs">
+                <div class="text-center border-b border-gray-200 pb-4 space-y-1">
+                    <h2 class="text-xl font-extrabold text-pharmacy-600">Swetha Rajshahi Cosmetic and Pharmacy</h2>
+                    <p class="text-gray-500">Shetla Colony, Gali No. 2, Shop No. 38, Gurugram, Haryana</p>
+                    <p class="text-gray-600 font-semibold">Chemist: Yuvraj Rajshahi | Contact: 9813480524 / 9050568087</p>
+                    <span class="inline-block bg-pharmacy-50 text-pharmacy-700 px-3 py-0.5 rounded-full font-bold text-[10px] mt-1">SR CARE - RETAIL INVOICE</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-gray-700">
+                    <div>
+                        <p><strong>Invoice No:</strong> <span id="invNumber">SR-9821</span></p>
+                        <p><strong>Date:</strong> <span id="invDate">2026-09-27</span></p>
+                    </div>
+                    <div class="text-right">
+                        <p><strong>Customer:</strong> <span id="invCustomerName">Rahul Sharma</span></p>
+                        <p><strong>Mobile:</strong> <span id="invCustomerMobile">9876543210</span></p>
+                    </div>
+                </div>
+
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-300 bg-gray-50">
+                            <th class="py-2 px-2">Medicine / Product</th>
+                            <th class="py-2 px-2">Batch</th>
+                            <th class="py-2 px-2">Qty</th>
+                            <th class="py-2 px-2">MRP</th>
+                            <th class="py-2 px-2 text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invItemsTable" class="divide-y divide-gray-100">
+                        <!-- Populated -->
+                    </tbody>
+                </table>
+
+                <div class="flex justify-end pt-2 border-t border-gray-200">
+                    <div class="w-48 space-y-1 text-right">
+                        <div class="flex justify-between"><span>Subtotal:</span> <span id="invSubtotal">₹529</span></div>
+                        <div class="flex justify-between font-extrabold text-sm text-pharmacy-600 pt-1 border-t"><span>Total:</span> <span id="invTotal">₹529</span></div>
+                    </div>
+                </div>
+
+                <div class="text-center text-[11px] text-gray-500 pt-4 border-t border-dashed border-gray-200 space-y-1">
+                    <p class="font-semibold text-rose-600">Medicine lene ke baad dobara return nahi hogi.</p>
+                    <p>Medicines ko doctor dwara batayi gayi salah ke anusar hi lein.</p>
+                    <p class="font-bold text-pharmacy-600">Home Delivery Available across Gurugram</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 pt-2">
+                <button onclick="window.print()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-print"></i> Print Invoice
+                </button>
+                <button onclick="shareWhatsAppBill()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-base"></i> Share on WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= AUTHENTICATION MODAL ================= -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="font-extrabold text-sm text-gray-900">Customer Login / OTP Verification</h3>
+                <button onclick="closeAuthModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Mobile Number / Email</label>
+                    <input type="text" id="authMobile" placeholder="Enter 10-digit mobile" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-medium">
+                </div>
+                <button onclick="sendOtp()" class="w-full bg-pharmacy-600 hover:bg-pharmacy-700 text-white font-bold py-2.5 rounded-xl transition">
+                    Get Verification OTP
+                </button>
+                <div id="otpBox" class="space-y-2 hidden pt-2">
+                    <label class="block font-bold text-gray-700 mb-1">Enter 4-Digit OTP (Hint: 1234)</label>
+                    <input type="text" id="authOtp" maxlength="4" placeholder="1234" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-medium text-center tracking-widest text-base font-bold">
+                    <button onclick="verifyOtp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition">
+                        Verify & Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TRACK ORDER MODAL ================= -->
+    <div id="trackOrderModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="font-extrabold text-sm text-gray-900">Track Order Status</h3>
+                <button onclick="closeTrackOrderModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <input type="text" id="trackOrderIdInput" placeholder="Enter Order ID (e.g. SR-9821)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-medium">
+                <button onclick="trackOrderQuery()" class="w-full bg-pharmacy-600 text-white font-bold py-2.5 rounded-xl transition">Check Status</button>
+                <div id="trackResultBox" class="p-3 bg-gray-50 rounded-xl hidden space-y-2 font-medium"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PRESCRIPTION UPLOAD MODAL ================= -->
+    <div id="prescriptionModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="font-extrabold text-sm text-gray-900">Upload Doctor Prescription</h3>
+                <button onclick="closePrescriptionModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <p class="text-gray-500">Upload prescription image or PDF to get fast review & medicine delivery from Swetha Rajshahi Pharmacy.</p>
+                <input type="file" id="generalRxFile" accept="image/*,.pdf" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pharmacy-50 file:text-pharmacy-700">
+                <button onclick="submitGeneralPrescription()" class="w-full bg-pharmacy-600 text-white font-bold py-2.5 rounded-xl transition">Submit Prescription</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-pharmacy-800 text-white pt-12 pb-8 border-t border-pharmacy-700 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 text-xs sm:text-sm">
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center font-black text-sm">SR</div>
+                    <h3 class="font-extrabold text-base">Swetha Rajshahi Cosmetics And Pharmacy</h3>
+                </div>
+                <p class="text-pharmacy-100 text-xs leading-relaxed">
+                    Shop No. 38, Gali No. 2, Shetla Colony, Near Shetla Mata Mandir, Gurugram, Haryana.
+                </p>
+                <p class="text-[11px] text-emerald-300 font-semibold">Backend Order Routing & System Active</p>
+            </div>
+            <div class="space-y-2">
+                <h4 class="font-bold text-emerald-400 text-sm">Categories</h4>
+                <ul class="space-y-1.5 text-pharmacy-100 text-xs">
+                    <li><a href="#" onclick="filterCategory('Medicines')" class="hover:underline">Medicines & Prescriptions</a></li>
+                    <li><a href="#" onclick="filterCategory('Skin Care')" class="hover:underline">Skin Care & Glow</a></li>
+                    <li><a href="#" onclick="filterCategory('Hair Care')" class="hover:underline">Hair Care Essentials</a></li>
+                    <li><a href="#" onclick="filterCategory('Baby Care')" class="hover:underline">Baby Care Products</a></li>
+                </ul>
+            </div>
+            <div class="space-y-2">
+                <h4 class="font-bold text-emerald-400 text-sm">Customer Service</h4>
+                <ul class="space-y-1.5 text-pharmacy-100 text-xs">
+                    <li><a href="#" onclick="openTrackOrderModal()" class="hover:underline">Track Order & Shipping</a></li>
+                    <li><a href="#" onclick="openPrescriptionModal()" class="hover:underline">Prescription Upload Guide</a></li>
+                    <li><a href="#" class="hover:underline">Returns & Refund Policy</a></li>
+                    <li><a href="tel:9813480524" class="hover:underline">Contact Store Support: 9813480524 / 9050568087</a></li>
+                </ul>
+            </div>
+            <div class="space-y-2">
+                <h4 class="font-bold text-emerald-400 text-sm">Secure Payments</h4>
+                <p class="text-pharmacy-100 text-xs">We support Cash on Delivery, UPI, and Secure Online Transactions.</p>
+                <div class="flex items-center gap-2 pt-2 text-xl text-emerald-300">
+                    <i class="fa-brands fa-cc-visa"></i>
+                    <i class="fa-brands fa-cc-mastercard"></i>
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 pt-6 border-t border-pharmacy-700 text-center text-xs text-pharmacy-200">
+            © 2026 Swetha Rajshahi Cosmetics And Pharmacy, Gurugram. All Rights Reserved.
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Database State
+        let products = [
+            { id: 1, name: "Paracetamol 650mg Tablet", category: "Medicines", mrp: 35, price: 30, discount: "14% OFF", stock: 120, batch: "PAR-982", expiry: "08/2028", rx: false, image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400", manufacturer: "Cipla Ltd" },
+            { id: 2, name: "Revital H Daily Health Capsule", category: "Medicines", mrp: 310, price: 265, discount: "15% OFF", stock: 45, batch: "REV-441", expiry: "11/2027", rx: false, image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400", manufacturer: "Sun Pharma" },
+            { id: 3, name: "Cetaphil Gentle Skin Cleanser", category: "Skin Care", mrp: 650, price: 550, discount: "15% OFF", stock: 18, batch: "CTP-109", expiry: "05/2028", rx: false, image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400", manufacturer: "Galderma" },
+            { id: 4, name: "Mamaearth Onion Hair Fall Oil", category: "Hair Care", mrp: 399, price: 319, discount: "20% OFF", stock: 25, batch: "MAM-881", expiry: "01/2029", rx: false, image: "https://images.unsplash.com/photo-1608248597359-f53835f1118b?w=400", manufacturer: "Honasa Consumer" },
+            { id: 5, name: "Himalaya Baby Gentle Powder", category: "Baby Care", mrp: 210, price: 185, discount: "12% OFF", stock: 0, batch: "HIM-332", expiry: "09/2027", rx: false, image: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400", manufacturer: "Himalaya Wellness" }
+        ];
+
+        let cart = [];
+        let wishlist = [];
+        let orders = [
+            { id: "SR-9821", name: "Rahul Sharma", mobile: "9876543210", address: "Shetla Colony, Gali 2, Gurugram", items: [{ name: "Paracetamol 650mg", qty: 2, price: 30 }], total: 529, status: "Out for Delivery", rxVerified: true, date: "2026-09-27" }
+        ];
+        let currentFilter = 'All';
+        let currentUser = null;
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            renderAdminDashboardOrders();
+            renderAdminProducts();
+            renderAdminPrescriptions();
+        });
+
+        // Toast Notification
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // View Switching
+        function switchView(view) {
+            const storeView = document.getElementById('storeView');
+            const adminView = document.getElementById('adminView');
+            if(view === 'admin') {
+                storeView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            } else {
+                adminView.classList.add('hidden');
+                storeView.classList.remove('hidden');
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        }
+
+        function adminLogout() {
+            showToast("Logged out from Admin Portal");
+            switchView('store');
+        }
+
+        // Render Products Catalog
+        function renderProducts(filteredList = null) {
+            const grid = document.getElementById('productGrid');
+            const list = filteredList || (currentFilter === 'All' ? products : products.filter(p => p.category === currentFilter));
+            
+            if(list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-gray-500 font-medium">No products found in this category.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(p => `
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col overflow-hidden group">
+                    <div class="relative bg-gray-50 p-4 flex items-center justify-center h-48 overflow-hidden">
+                        <img src="${p.image}" alt="${p.name}" class="h-full object-contain group-hover:scale-105 transition duration-300">
+                        <span class="absolute top-3 left-3 bg-rose-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">${p.discount}</span>
+                        <button onclick="toggleWishlistItem(${p.id})" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white shadow flex items-center justify-center text-gray-600 hover:text-rose-500 transition">
+                            <i class="fa-${wishlist.includes(p.id) ? 'solid text-rose-500' : 'regular'} fa-heart text-xs"></i>
+                        </button>
+                        ${p.stock === 0 ? '<div class="absolute inset-0 bg-white/80 backdrop-blur-[1px] flex items-center justify-center font-extrabold text-rose-600 text-sm">OUT OF STOCK</div>' : ''}
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                            <span class="text-[10px] font-bold text-pharmacy-600 uppercase tracking-wide">${p.category}</span>
+                            <h4 class="font-extrabold text-sm text-gray-900 mt-0.5 line-clamp-1">${p.name}</h4>
+                            <p class="text-[11px] text-gray-400 mt-0.5">${p.manufacturer || 'Swetha Rajshahi Pharma'}</p>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-gray-400 line-through">₹${p.mrp}</span>
+                                <span class="text-base font-black text-gray-900 ml-1.5">₹${p.price}</span>
+                            </div>
+                            <span class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Batch: ${p.batch}</span>
+                        </div>
+                        <button onclick="addToCart(${p.id})" ${p.stock === 0 ? 'disabled' : ''} class="w-full bg-pharmacy-50 hover:bg-pharmacy-600 text-pharmacy-700 hover:text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 ${p.stock === 0 ? 'opacity-50 cursor-not-allowed' : ''}">
+                            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCategory(cat) {
+            currentFilter = cat;
+            document.getElementById('catalogTitle').innerText = cat === 'All' ? 'Featured Medicines & Products' : cat;
+            renderProducts();
+        }
+
+        function handleSearch(query) {
+            if(!query.trim()) {
+                document.getElementById('searchSuggestions').classList.add('hidden');
+                renderProducts();
+                return;
+            }
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()) || p.category.toLowerCase().includes(query.toLowerCase()));
+            const sugBox = document.getElementById('searchSuggestions');
+            sugBox.classList.remove('hidden');
+            sugBox.innerHTML = filtered.slice(0, 5).map(p => `
+                <div onclick="selectSuggestion('${p.name}')" class="p-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between text-xs border-b border-gray-100">
+                    <span class="font-bold text-gray-800">${p.name}</span>
+                    <span class="text-pharmacy-600 font-semibold">₹${p.price}</span>
+                </div>
+            `).join('') || `<div class="p-3 text-xs text-gray-500">No medicines found</div>`;
+            renderProducts(filtered);
+        }
+
+        function selectSuggestion(name) {
+            document.getElementById('searchInput').value = name;
+            document.getElementById('searchSuggestions').classList.add('hidden');
+            renderProducts(products.filter(p => p.name.toLowerCase().includes(name.toLowerCase())));
+        }
+
+        function triggerSearch() {
+            const val = document.getElementById('searchInput').value;
+            handleSearch(val);
+        }
+
+        // Cart Actions
+        function toggleCart() {
+            const drawer = document.getElementById('cartDrawer');
+            drawer.classList.toggle('hidden');
+            renderCartItems();
+        }
+
+        function addToCart(id) {
+            const prod = products.find(p => p.id === id);
+            if(!prod || prod.stock === 0) return;
+            const existing = cart.find(item => item.id === id);
+            if(existing) {
+                if(existing.qty < prod.stock) existing.qty++;
+                else showToast("Maximum stock limit reached!");
+            } else {
+                cart.push({...prod, qty: 1});
+            }
+            updateCartBadge();
+            showToast(`${prod.name} added to cart`);
+        }
+
+        function updateCartBadge() {
+            const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById('cartCountBadge').innerText = totalCount;
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cartItemsContainer');
+            if(cart.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-gray-400 text-xs">Your cart is empty</div>`;
+                document.getElementById('cartSubtotal').innerText = '₹0';
+                document.getElementById('cartTotal').innerText = '₹0';
+                return;
+            }
+            container.innerHTML = cart.map(item => `
+                <div class="flex items-center gap-3 py-3">
+                    <img src="${item.image}" class="w-12 h-12 object-contain bg-gray-50 rounded-lg p-1">
+                    <div class="flex-1">
+                        <h5 class="font-bold text-xs text-gray-900">${item.name}</h5>
+                        <p class="text-xs text-pharmacy-600 font-bold">₹${item.price} <span class="text-gray-400 line-through text-[10px]">₹${item.mrp}</span></p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 bg-gray-100 rounded text-xs font-bold">-</button>
+                        <span class="text-xs font-bold">${item.qty}</span>
+                        <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 bg-gray-100 rounded text-xs font-bold">+</button>
+                    </div>
+                </div>
+            `).join('');
+
+            const sub = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            document.getElementById('cartSubtotal').innerText = `₹${sub}`;
+            document.getElementById('cartTotal').innerText = `₹${sub}`;
+        }
+
+        function changeQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if(item) {
+                item.qty += delta;
+                if(item.qty <= 0) cart = cart.filter(i => i.id !== id);
+                updateCartBadge();
+                renderCartItems();
+            }
+        }
+
+        // Wishlist Actions
+        function toggleWishlist() {
+            document.getElementById('wishlistDrawer').classList.toggle('hidden');
+            renderWishlistItems();
+        }
+
+        function toggleWishlistItem(id) {
+            if(wishlist.includes(id)) {
+                wishlist = wishlist.filter(i => i !== id);
+                showToast("Removed from wishlist");
+            } else {
+                wishlist.push(id);
+                showToast("Added to wishlist");
+            }
+            renderProducts();
+        }
+
+        function renderWishlistItems() {
+            const container = document.getElementById('wishlistItemsContainer');
+            const list = products.filter(p => wishlist.includes(p.id));
+            if(list.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-gray-400 text-xs">No saved wishlist items</div>`;
+                return;
+            }
+            container.innerHTML = list.map(item => `
+                <div class="flex items-center gap-3 py-3">
+                    <img src="${item.image}" class="w-12 h-12 object-contain bg-gray-50 rounded-lg p-1">
+                    <div class="flex-1">
+                        <h5 class="font-bold text-xs text-gray-900">${item.name}</h5>
+                        <p class="text-xs text-pharmacy-600 font-bold">₹${item.price}</p>
+                    </div>
+                    <button onclick="addToCart(${item.id}); toggleWishlist();" class="bg-pharmacy-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Add</button>
+                </div>
+            `).join('');
+        }
+
+        // Checkout & Prescription requirement
+        function proceedToCheckout() {
+            if(cart.length === 0) {
+                showToast("Your cart is empty!");
+                return;
+            }
+            toggleCart();
+            document.getElementById('checkoutModal').classList.remove('hidden');
+            const sub = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            document.getElementById('chkFinalAmount').innerText = `₹${sub}`;
+
+            // Check if any product needs prescription
+            const needsRx = cart.some(item => item.rx);
+            if(needsRx) {
+                document.getElementById('prescriptionUploadBox').classList.remove('hidden');
+            } else {
+                document.getElementById('prescriptionUploadBox').classList.add('hidden');
+            }
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.add('hidden');
+        }
+
+        function submitOrder(e) {
+            e.preventDefault();
+            const orderId = 'SR-' + Math.floor(1000 + Math.random() * 9000);
+            const name = document.getElementById('chkName').value;
+            const mobile = document.getElementById('chkMobile').value;
+            const address = document.getElementById('chkAddress').value;
+            const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            const newOrder = {
+                id: orderId,
+                name,
+                mobile,
+                address,
+                items: [...cart],
+                total,
+                status: "Pending",
+                rxVerified: !cart.some(item => item.rx),
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            orders.unshift(newOrder);
+            cart = [];
+            updateCartBadge();
+            closeCheckoutModal();
+            showToast(`Order ${orderId} successfully placed!`);
+            renderAdminDashboardOrders();
+            renderAdminOrdersTable();
+            openInvoiceModal(orderId);
+        }
+
+        // Invoice Modal
+        function openInvoiceModal(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if(!order) return;
+            document.getElementById('invNumber').innerText = order.id;
+            document.getElementById('invDate').innerText = order.date;
+            document.getElementById('invCustomerName').innerText = order.name;
+            document.getElementById('invCustomerMobile').innerText = order.mobile;
+            document.getElementById('invSubtotal').innerText = `₹${order.total}`;
+            document.getElementById('invTotal').innerText = `₹${order.total}`;
+
+            const tbody = document.getElementById('invItemsTable');
+            tbody.innerHTML = order.items.map(i => `
+                <tr>
+                    <td class="py-2 px-2 font-bold">${i.name}</td>
+                    <td class="py-2 px-2 text-gray-500">${i.batch || 'BCH-98'}</td>
+                    <td class="py-2 px-2">${i.qty}</td>
+                    <td class="py-2 px-2">₹${i.price}</td>
+                    <td class="py-2 px-2 text-right font-bold">₹${i.price * i.qty}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('invoiceModal').classList.remove('hidden');
+        }
+
+        function closeInvoiceModal() {
+            document.getElementById('invoiceModal').classList.add('hidden');
+        }
+
+        function shareWhatsAppBill() {
+            const orderId = document.getElementById('invNumber').innerText;
+            const name = document.getElementById('invCustomerName').innerText;
+            const total = document.getElementById('invTotal').innerText;
+            const text = `Hello ${name}, your Tax Invoice ${orderId} from Swetha Rajshahi Cosmetic and Pharmacy (Total: ${total}) has been generated. Thank you for choosing SR Care! Contact: 9813480524 / 9050568087`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        // Admin Tabs & Management
+        function switchAdminTab(tabName) {
+            document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.admin-tab-btn').forEach(el => {
+                el.classList.remove('bg-pharmacy-600', 'text-white');
+                el.classList.add('text-gray-600');
+            });
+            document.getElementById(`adminTab-${tabName}`).classList.remove('hidden');
+            const btn = document.getElementById(`tabBtn-${tabName}`);
+            btn.classList.add('bg-pharmacy-600', 'text-white');
+            btn.classList.remove('text-gray-600');
+        }
+
+        function renderAdminDashboardOrders() {
+            const tbody = document.getElementById('adminDashboardOrdersTable');
+            document.getElementById('statPendingOrders').innerText = orders.filter(o => o.status === 'Pending').length;
+            document.getElementById('statTotalProducts').innerText = products.length;
+
+            tbody.innerHTML = orders.slice(0, 5).map(o => `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="py-3 px-4 font-bold text-pharmacy-600">${o.id}</td>
+                    <td class="py-3 px-4 font-medium">${o.name}</td>
+                    <td class="py-3 px-4">${o.items.length} items</td>
+                    <td class="py-3 px-4 font-bold">₹${o.total}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${o.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">${o.status}</span>
+                    </td>
+                    <td class="py-3 px-4">${o.rxVerified ? '<span class="text-emerald-600 font-bold">Verified</span>' : '<span class="text-amber-600 font-bold">Needs Rx</span>'}</td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="openInvoiceModal('${o.id}')" class="bg-pharmacy-50 text-pharmacy-700 hover:bg-pharmacy-600 hover:text-white px-3 py-1.5 rounded-lg font-bold transition">Invoice</button>
+                    </td>
+                </tr>
+            `).join('');
+            renderAdminOrdersTable();
+        }
+
+        function renderAdminOrdersTable() {
+            const tbody = document.getElementById('adminOrdersTable');
+            if(!tbody) return;
+            tbody.innerHTML = orders.map(o => `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="py-3 px-4 font-bold text-pharmacy-600">${o.id}<br><span class="text-[10px] text-gray-400">${o.date}</span></td>
+                    <td class="py-3 px-4">${o.name}<br><span class="text-[10px] text-gray-400">${o.mobile}</span></td>
+                    <td class="py-3 px-4">${o.items.map(i => `${i.name} (x${i.qty})`).join(', ')}</td>
+                    <td class="py-3 px-4 font-bold">₹${o.total}</td>
+                    <td class="py-3 px-4">
+                        <select onchange="updateOrderStatus('${o.id}', this.value)" class="bg-gray-100 border rounded px-2 py-1 font-bold text-[11px]">
+                            <option ${o.status==='Pending'?'selected':''}>Pending</option>
+                            <option ${o.status==='Confirmed'?'selected':''}>Confirmed</option>
+                            <option ${o.status==='Preparing'?'selected':''}>Preparing</option>
+                            <option ${o.status==='Out for Delivery'?'selected':''}>Out for Delivery</option>
+                            <option ${o.status==='Delivered'?'selected':''}>Delivered</option>
+                        </select>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="openInvoiceModal('${o.id}')" class="bg-pharmacy-50 text-pharmacy-700 px-3 py-1.5 rounded-lg font-bold">Bill</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            const order = orders.find(o => o.id === orderId);
+            if(order) {
+                order.status = newStatus;
+                showToast(`Order ${orderId} status updated to ${newStatus}`);
+                renderAdminDashboardOrders();
+            }
+        }
+
+        function renderAdminProducts() {
+            const tbody = document.getElementById('adminProductsTable');
+            tbody.innerHTML = products.map(p => `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="py-3 px-4 flex items-center gap-3">
+                        <img src="${p.image}" class="w-9 h-9 object-contain bg-gray-50 rounded p-0.5">
+                        <span class="font-bold text-gray-900">${p.name}</span>
+                    </td>
+                    <td class="py-3 px-4 text-gray-600">${p.category}</td>
+                    <td class="py-3 px-4"><span class="line-through text-gray-400">₹${p.mrp}</span> <strong class="text-pharmacy-600 ml-1">₹${p.price}</strong></td>
+                    <td class="py-3 px-4 font-bold ${p.stock === 0 ? 'text-rose-600' : 'text-gray-800'}">${p.stock}</td>
+                    <td class="py-3 px-4">${p.batch} <br><span class="text-[10px] text-gray-400">Exp: ${p.expiry}</span></td>
+                    <td class="py-3 px-4">${p.rx ? '<span class="text-rose-600 font-bold">Yes</span>' : 'No'}</td>
+                    <td class="py-3 px-4 text-right space-x-1">
+                        <button onclick="openProductModal(${p.id})" class="bg-pharmacy-50 hover:bg-pharmacy-600 hover:text-white text-pharmacy-700 px-3 py-1.5 rounded-lg font-bold transition">Edit</button>
+                        <button onclick="deleteProduct(${p.id})" class="bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 px-3 py-1.5 rounded-lg font-bold transition">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterAdminProducts(query) {
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()) || p.batch.toLowerCase().includes(query.toLowerCase()));
+            const tbody = document.getElementById('adminProductsTable');
+            tbody.innerHTML = filtered.map(p => `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="py-3 px-4 flex items-center gap-3">
+                        <img src="${p.image}" class="w-9 h-9 object-contain bg-gray-50 rounded p-0.5">
+                        <span class="font-bold text-gray-900">${p.name}</span>
+                    </td>
+                    <td class="py-3 px-4 text-gray-600">${p.category}</td>
+                    <td class="py-3 px-4"><span class="line-through text-gray-400">₹${p.mrp}</span> <strong class="text-pharmacy-600 ml-1">₹${p.price}</strong></td>
+                    <td class="py-3 px-4 font-bold">${p.stock}</td>
+                    <td class="py-3 px-4">${p.batch}</td>
+                    <td class="py-3 px-4">${p.rx ? 'Yes' : 'No'}</td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="openProductModal(${p.id})" class="bg-pharmacy-50 text-pharmacy-700 px-3 py-1.5 rounded-lg font-bold">Edit</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openProductModal(id = null) {
+            document.getElementById('productModal').classList.remove('hidden');
+            if(id) {
+                document.getElementById('productModalTitle').innerText = 'Edit Product Details';
+                const p = products.find(prod => prod.id === id);
+                document.getElementById('prodId').value = p.id;
+                document.getElementById('prodName').value = p.name;
+                document.getElementById('prodCategory').value = p.category;
+                document.getElementById('prodManufacturer').value = p.manufacturer || '';
+                document.getElementById('prodMrp').value = p.mrp;
+                document.getElementById('prodPrice').value = p.price;
+                document.getElementById('prodStock').value = p.stock;
+                document.getElementById('prodBatch').value = p.batch;
+                document.getElementById('prodExpiry').value = p.expiry;
+                document.getElementById('prodImage').value = p.image;
+                document.getElementById('prodRx').checked = p.rx;
+            } else {
+                document.getElementById('productModalTitle').innerText = 'Add New Product';
+                document.getElementById('productForm').reset();
+                document.getElementById('prodId').value = '';
+            }
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        function saveProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('prodId').value;
+            const name = document.getElementById('prodName').value;
+            const category = document.getElementById('prodCategory').value;
+            const manufacturer = document.getElementById('prodManufacturer').value;
+            const mrp = parseFloat(document.getElementById('prodMrp').value);
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const stock = parseInt(document.getElementById('prodStock').value);
+            const batch = document.getElementById('prodBatch').value || 'BCH-99';
+            const expiry = document.getElementById('prodExpiry').value || '12/2028';
+            const image = document.getElementById('prodImage').value || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400';
+            const rx = document.getElementById('prodRx').checked;
+            const discount = Math.round(((mrp - price) / mrp) * 100) + '% OFF';
+
+            if(id) {
+                const p = products.find(prod => prod.id == id);
+                Object.assign(p, {name, category, manufacturer, mrp, price, stock, batch, expiry, image, rx, discount});
+                showToast("Product updated successfully!");
+            } else {
+                const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
+                products.push({id: newId, name, category, manufacturer, mrp, price, stock, batch, expiry, image, rx, discount});
+                showToast("New product added successfully!");
+            }
+
+            closeProductModal();
+            renderProducts();
+            renderAdminProducts();
+            renderAdminDashboardOrders();
+        }
+
+        function deleteProduct(id) {
+            if(confirm("Are you sure you want to delete this product?")) {
+                products = products.filter(p => p.id !== id);
+                showToast("Product deleted");
+                renderProducts();
+                renderAdminProducts();
+            }
+        }
+
+        function renderAdminPrescriptions() {
+            const container = document.getElementById('adminPrescriptionList');
+            container.innerHTML = orders.map(o => `
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h5 class="font-extrabold text-xs text-gray-900">${o.name} <span class="text-pharmacy-600">(${o.id})</span></h5>
+                            <p class="text-[11px] text-gray-500">Mobile: ${o.mobile}</p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${o.rxVerified ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${o.rxVerified ? 'Verified' : 'Pending Review'}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="verifyPrescription('${o.id}')" class="flex-1 bg-pharmacy-600 hover:bg-pharmacy-700 text-white font-bold py-2 rounded-lg text-xs transition">Approve Prescription</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function verifyPrescription(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if(order) {
+                order.rxVerified = true;
+                showToast(`Prescription for ${orderId} approved!`);
+                renderAdminPrescriptions();
+                renderAdminDashboardOrders();
+            }
+        }
+
+        function saveStoreSettings() {
+            const name = document.getElementById('settingStoreName').value;
+            const tagline = document.getElementById('settingTagline').value;
+            const chemist = document.getElementById('settingChemist').value;
+            const contact = document.getElementById('settingContact').value;
+            const address = document.getElementById('settingAddress').value;
+            const logoText = document.getElementById('settingLogoText').value;
+
+            document.getElementById('brandTitleName').innerText = name.split(' ')[0] + ' ' + (name.split(' ')[1] || '');
+            document.getElementById('brandLogoText').innerText = logoText;
+            showToast("Store branding & settings updated!");
+        }
+
+        // Auth & Modals
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+        function sendOtp() {
+            const mob = document.getElementById('authMobile').value;
+            if(mob.length < 10) { showToast("Please enter a valid mobile number"); return; }
+            document.getElementById('otpBox').classList.remove('hidden');
+            showToast("OTP sent to mobile (Hint: 1234)");
+        }
+        function verifyOtp() {
+            const otp = document.getElementById('authOtp').value;
+            if(otp === '1234') {
+                currentUser = document.getElementById('authMobile').value;
+                document.getElementById('authBtnText').innerText = 'My Profile';
+                closeAuthModal();
+                showToast("Successfully logged in!");
+            } else {
+                showToast("Invalid OTP. Try 1234");
+            }
+        }
+
+        function openTrackOrderModal() { document.getElementById('trackOrderModal').classList.remove('hidden'); }
+        function closeTrackOrderModal() { document.getElementById('trackOrderModal').classList.add('hidden'); }
+        function trackOrderQuery() {
+            const id = document.getElementById('trackOrderIdInput').value.trim();
+            const order = orders.find(o => o.id.toLowerCase() === id.toLowerCase());
+            const resBox = document.getElementById('trackResultBox');
+            resBox.classList.remove('hidden');
+            if(order) {
+                resBox.innerHTML = `<p class="text-emerald-700 font-bold">Status: ${order.status}</p><p class="text-gray-600">Customer: ${order.name}</p><p class="text-gray-600">Total: ₹${order.total}</p>`;
+            } else {
+                resBox.innerHTML = `<p class="text-rose-600 font-bold">Order ID not found.</p>`;
+            }
+        }
+
+        function openPrescriptionModal() { document.getElementById('prescriptionModal').classList.remove('hidden'); }
+        function closePrescriptionModal() { document.getElementById('prescriptionModal').classList.add('hidden'); }
+        function submitGeneralPrescription() {
+            closePrescriptionModal();
+            showToast("Prescription uploaded successfully! Pharmacist will verify soon.");
+        }
+        function scrollToCatalog() {
+            document.getElementById('catalogSection').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
